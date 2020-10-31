@@ -3,27 +3,27 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://nishanthkarthik.github.io/</loc>
+    <loc>https://nishanthkarthik.github.io/docs/</loc>
     <lastmod>2020-08-03T19:26:20+02:00</lastmod>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://nishanthkarthik.github.io/blog/</loc>
+    <loc>https://nishanthkarthik.github.io/docs/blog/</loc>
     <lastmod>2020-08-03T19:26:20+02:00</lastmod>
   </url>
   
   <url>
-    <loc>https://nishanthkarthik.github.io/blog/cpp-inline-var/</loc>
+    <loc>https://nishanthkarthik.github.io/docs/blog/cpp-inline-var/</loc>
     <lastmod>2020-08-03T19:26:20+02:00</lastmod>
   </url>
   
   <url>
-    <loc>https://nishanthkarthik.github.io/categories/</loc>
+    <loc>https://nishanthkarthik.github.io/docs/categories/</loc>
   </url>
   
   <url>
-    <loc>https://nishanthkarthik.github.io/tags/</loc>
+    <loc>https://nishanthkarthik.github.io/docs/tags/</loc>
   </url>
   
 </urlset>

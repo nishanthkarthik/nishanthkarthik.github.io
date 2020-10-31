@@ -1,4 +1,4 @@
-baseURL = "https://nishanthkarthik.github.io"
+baseURL = "https://nishanthkarthik.github.io/docs"
 languageCode = "en-us"
 title = "nishanthkarthik's blog"
 theme = "paper"
