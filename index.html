@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+    <title>nishanthkarthik&#39;s blog</title>
+    
+    <meta name="description" content="">
+    <meta name="author" content="">
+    
+    <link href="https://nishanthkarthik.github.io/an-old-hope.min.css" rel="stylesheet">
+    <link href="https://nishanthkarthik.github.io/style.css" rel="stylesheet">
+    <link href="https://nishanthkarthik.github.io/custom.css" rel="stylesheet">
+    
+    <link rel="apple-touch-icon" href="https://nishanthkarthik.github.io/apple-touch-icon.png">
+    <link rel="icon" href="https://nishanthkarthik.github.io/favicon.ico">
+    <meta name="generator" content="Hugo 0.76.5" />
+    
+    <link rel="alternate" type="application/rss+xml" href="https://nishanthkarthik.github.io/index.xml" title="nishanthkarthik's blog" />
+    
+    
+    <script>
+      function setTheme() {
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.body.classList.add('dark');
+          return;
+        }
+
+        const time = new Date();
+        const prev = localStorage.getItem('date');
+        const date = String(time.getMonth() + 1) + '.' + String(time.getDate());
+
+        const now = time.getTime();
+        let sunrise;
+        let sunset;
+
+        function setBodyClass() {
+          if (now > sunrise && now < sunset) return;
+          document.body.classList.add('dark');
+        }
+
+        if (date !== prev) {
+          fetch('https://api.ipgeolocation.io/astronomy?apiKey=5ed37d85103e4defa5df4c5298ed5215')
+            .then((res) => res.json())
+            .then((data) => {
+              sunrise = data.sunrise.split(':').map(Number);
+              sunset = data.sunset.split(':').map(Number);
+            })
+            .catch(() => {
+              sunrise = [7, 0];
+              sunset = [19, 0];
+            })
+            .finally(() => {
+              sunrise = time.setHours(sunrise[0], sunrise[1], 0);
+              sunset = time.setHours(sunset[0], sunset[1], 0);
+              setBodyClass();
+              localStorage.setItem('sunrise', sunrise);
+              localStorage.setItem('sunset', sunset);
+            });
+          localStorage.setItem('date', date);
+        } else {
+          sunrise = Number(localStorage.getItem('sunrise'));
+          sunset = Number(localStorage.getItem('sunset'));
+          setBodyClass();
+        }
+      }
+    </script>
+  </head>
+  <body class="list home">
+    <script>
+      setTheme();
+    </script>
+    <header class="header">
+      <nav class="nav">
+        <h1 class="logo"><a href="https://nishanthkarthik.github.io">nishanthkarthik&#39;s blog</a></h1>
+      </nav>
+    </header>
+    <main class="main">
+
+<article class="first-entry">
+  <header class="entry-header">
+    <h2>Inline Variables in C&#43;&#43;17</h2>
+  </header>
+  <section class="entry-content">
+   <p>I watched Nir Friedman’s cppcon talk on globals and the linker. This post is a hands-on to try inline variables in C&#43;&#43;.
+What are inline variables? cppreference on inline specifier says
+ An inline function or variable (since C&#43;&#43;17) with external linkage (e.g. not declared static) has the following additional properties:
+ There may be more than one definition of an inline function or variable (since C&#43;&#43;17) in the program as long as each definition appears in a different translation unit and (for non-static inline functions and variables (since C&#43;&#43;17)) all definitions are identical....</p>
+  </section>
+  <footer class="entry-footer">
+    <time>August 3, 2020</time>
+  </footer>
+  <a class="entry-link" href="https://nishanthkarthik.github.io/blog/cpp-inline-var/"></a>
+</article></main>
+<footer class="footer">
+  <span>&copy; 2020 <a href="https://nishanthkarthik.github.io">nishanthkarthik&#39;s blog</a></span>
+  <span>&middot;</span>
+  <span>Powered by <a href="https://gohugo.io/" rel="noopener" target="_blank">Hugo️️</a>️</span>
+  <span>&middot;</span>
+  <span>Theme️ <a href="https://github.com/nanxiaobei/hugo-paper" rel="noopener" target="_blank">Paper</a></span>
+</footer>
+<script src="https://nishanthkarthik.github.io/highlight.min.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+</body>
+</html>
+
