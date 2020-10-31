@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+    <title>Inline Variables in C&#43;&#43;17 - nishanthkarthik&#39;s blog</title>
+    
+    <meta name="description" content="I watched Nir Friedman&rsquo;s cppcon talk on globals and the linker. This post is a hands-on to try inline variables in C&#43;&#43;.
+What are inline variables? cppreference on inline specifier says
+ An inline function or variable (since C&#43;&#43;17) with external linkage (e.g. not declared static) has the following additional properties:
+ There may be more than one definition of an inline function or variable (since C&#43;&#43;17) in the program as long as each definition appears in a different translation unit and (for non-static inline functions and variables (since C&#43;&#43;17)) all definitions are identical.">
+    <meta name="author" content="">
+    
+    <link href="https://nishanthkarthik.github.io/an-old-hope.min.css" rel="stylesheet">
+    <link href="https://nishanthkarthik.github.io/style.css" rel="stylesheet">
+    <link href="https://nishanthkarthik.github.io/custom.css" rel="stylesheet">
+    
+    <link rel="apple-touch-icon" href="https://nishanthkarthik.github.io/apple-touch-icon.png">
+    <link rel="icon" href="https://nishanthkarthik.github.io/favicon.ico">
+    <meta name="generator" content="Hugo 0.76.5" />
+    
+    
+    
+    <script>
+      function setTheme() {
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.body.classList.add('dark');
+          return;
+        }
+
+        const time = new Date();
+        const prev = localStorage.getItem('date');
+        const date = String(time.getMonth() + 1) + '.' + String(time.getDate());
+
+        const now = time.getTime();
+        let sunrise;
+        let sunset;
+
+        function setBodyClass() {
+          if (now > sunrise && now < sunset) return;
+          document.body.classList.add('dark');
+        }
+
+        if (date !== prev) {
+          fetch('https://api.ipgeolocation.io/astronomy?apiKey=5ed37d85103e4defa5df4c5298ed5215')
+            .then((res) => res.json())
+            .then((data) => {
+              sunrise = data.sunrise.split(':').map(Number);
+              sunset = data.sunset.split(':').map(Number);
+            })
+            .catch(() => {
+              sunrise = [7, 0];
+              sunset = [19, 0];
+            })
+            .finally(() => {
+              sunrise = time.setHours(sunrise[0], sunrise[1], 0);
+              sunset = time.setHours(sunset[0], sunset[1], 0);
+              setBodyClass();
+              localStorage.setItem('sunrise', sunrise);
+              localStorage.setItem('sunset', sunset);
+            });
+          localStorage.setItem('date', date);
+        } else {
+          sunrise = Number(localStorage.getItem('sunrise'));
+          sunset = Number(localStorage.getItem('sunset'));
+          setBodyClass();
+        }
+      }
+    </script>
+  </head>
+  <body class="single">
+    <script>
+      setTheme();
+    </script>
+    <header class="header">
+      <nav class="nav">
+        <p class="logo"><a href="https://nishanthkarthik.github.io">nishanthkarthik&#39;s blog</a></p>
+      </nav>
+    </header>
+    <main class="main">
+
+
+<article class="post-single">
+  <header class="post-header">
+    <h1 class="post-title">Inline Variables in C&#43;&#43;17</h1>
+    <div class="post-meta">August 3, 2020</div>
+  </header>
+  <div class="post-content"><p>I watched Nir Friedman&rsquo;s <a href="https://www.youtube.com/watch?v=xVT1y0xWgww">cppcon talk</a> on globals and the linker. This post is a hands-on to try <code>inline</code> variables in C++.</p>
+<h1 id="what-are-inline-variables">What are inline variables?</h1>
+<p><a href="https://en.cppreference.com/w/cpp/language/inline">cppreference on inline specifier</a> says</p>
+<blockquote>
+<p>An inline function or variable (since C++17) with external linkage (e.g. not declared static) has the following additional properties:</p>
+<ul>
+<li>There may be more than one definition of an inline function or variable (since C++17) in the program as long as each definition appears in a different translation unit and (for non-static inline functions and variables (since C++17)) all definitions are identical.</li>
+<li>It must be declared inline in every translation unit.</li>
+<li>It has the same address in every translation unit.</li>
+</ul>
+</blockquote>
+<p>If I were to compile an inline variable into a static library and a shared library, link an executable with it, I should end up with only one copy in the end.</p>
+<h1 id="how-does-this-work">How does this work?</h1>
+<p>Let&rsquo;s compile this snippet and inspect how it appears to <code>nm</code>. We have a non-inlined variable <code>first</code> and an inlined variable <code>second</code>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;string&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">namespace</span> Test {
+    std<span style="color:#f92672">::</span>string first <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;first&#34;</span>;
+    <span style="color:#66d9ef">inline</span> std<span style="color:#f92672">::</span>string second <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;second&#34;</span>;
+}
+</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#75715e"># static library</span>
+g++ -std<span style="color:#f92672">=</span>c++17 test.cpp -c -o test.cpp.o
+ar rcs libtest.a test.cpp.o
+
+<span style="color:#75715e"># shared library</span>
+g++ -std<span style="color:#f92672">=</span>c++17 test.cpp -c -fPIC -o test.cpp.o
+g++ -shared -Wl,-soname,libtest.so -o libtest.so test.cpp.o
+</code></pre></div><p>Run <code>nm -C</code> on the static library and <code>nm -CD</code> on the shared library to inspect the symbols. We <code>grep</code> for symbols under namespace <code>Test</code>.</p>
+<h2 id="static-library">Static library</h2>
+<pre><code>0000000000000000 u guard variable for Test::second[abi:cxx11]
+0000000000000000 B Test::first[abi:cxx11]
+0000000000000000 u Test::second[abi:cxx11]
+</code></pre><h2 id="shared-library">Shared library</h2>
+<pre><code>00000000000051a0 u guard variable for Test::second[abi:cxx11]
+0000000000005160 B Test::first[abi:cxx11]
+0000000000005180 u Test::second[abi:cxx11]
+</code></pre><p>The <code>nm</code> <a href="https://linux.die.net/man/1/nm">manual</a> lists the types of symbols.</p>
+<blockquote>
+<p>Lower case <em>b</em> is local, Upper case <em>B</em> is global
+&ldquo;B&rdquo; The symbol is in the uninitialized data section (known as BSS), global.</p>
+<p>&ldquo;u&rdquo; The symbol is a unique global symbol. This is a GNU extension to the standard set of ELF symbol bindings. For such a symbol the dynamic linker will make sure that in the entire process there is just one symbol with this name and type in use.</p>
+<p>&ldquo;U&rdquo; The symbol is undefined. This should not be confused with lower case &ldquo;u&rdquo;.</p>
+</blockquote>
+<h1 id="creating-a-binary">Creating a binary</h1>
+<p>We write <code>main.cpp</code> to use the symbols and run <code>nm -C</code> on the <code>main</code> executable.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;string&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;iostream&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">namespace</span> Test {
+	<span style="color:#66d9ef">extern</span> std<span style="color:#f92672">::</span>string first;
+	<span style="color:#66d9ef">extern</span> std<span style="color:#f92672">::</span>string second;
+}
+
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>() {
+	std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> Test<span style="color:#f92672">::</span>first <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
+	std<span style="color:#f92672">::</span>cout <span style="color:#f92672">&lt;&lt;</span> Test<span style="color:#f92672">::</span>second <span style="color:#f92672">&lt;&lt;</span> std<span style="color:#f92672">::</span>endl;
+}
+</code></pre></div><h2 id="only-static-library">Only static library</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">g++ -std<span style="color:#f92672">=</span>c++17 ./main.cpp -o main -L. -l:./libtest.a
+</code></pre></div><pre><code>0000000000002492 t _GLOBAL__sub_I__ZN4Test5firstB5cxx11E
+0000000000005260 u guard variable for Test::second[abi:cxx11]
+0000000000005220 B Test::first[abi:cxx11]
+0000000000005240 u Test::second[abi:cxx11]
+</code></pre><h2 id="only-shared-library">Only shared library</h2>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">g++ -std<span style="color:#f92672">=</span>c++17 ./main.cpp -o main -L. -l:libtest.so -Wl,-rpath<span style="color:#f92672">=</span>./
+</code></pre></div><pre><code>00000000000041a0 B Test::first[abi:cxx11]
+00000000000041c0 B Test::second[abi:cxx11]
+</code></pre><p>Running <code>objdump</code> to list dynamic relocations,</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">$ objdump -R main | grep Test
+00000000000041a0 R_X86_64_COPY     Test::first<span style="color:#f92672">[</span>abi:cxx11<span style="color:#f92672">]</span>
+00000000000041c0 R_X86_64_COPY     Test::second<span style="color:#f92672">[</span>abi:cxx11<span style="color:#f92672">]</span>
+</code></pre></div><p>These symbols will be relocated at runtime. We run gdb to verify and these are indeed from the shared library.</p>
+<pre><code>0x5555555581b0 &lt;_ZN4Test5firstB5cxx11E+16&gt;:     102 'f' 105 'i' 114 'r' 115 's' 116 't'
+0x5555555581d0 &lt;_ZN4Test6secondB5cxx11E+16&gt;:    115 's' 101 'e' 99 'c'  111 'o' 110 'n' 100 'd'
+</code></pre><h2 id="both-static-and-shared-library">Both static and shared library</h2>
+<h3 id="static-library-first">Static library first</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">g++ -std<span style="color:#f92672">=</span>c++17 ./main.cpp -o main -L. -l:libtest.a -l:libtest.so -Wl,-rpath<span style="color:#f92672">=</span>./
+</code></pre></div><pre><code>0000000000005260 u guard variable for Test::second[abi:cxx11]
+0000000000005220 B Test::first[abi:cxx11]
+0000000000005240 u Test::second[abi:cxx11]
+</code></pre><p><code>objdump -RC ./main | grep Test</code> is empty. This means there are no relocations. I rebuilt the shared library with <code>2</code> suffixed at the end of both strings. When we run <code>./main</code>, we now know the origin of a symbol.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">./main 
+first
+second2
+</code></pre></div><h3 id="shared-library-first">Shared library first</h3>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">g++ -std<span style="color:#f92672">=</span>c++17 ./main.cpp -o main -L. -l:libtest.a -l:libtest.so -Wl,-rpath<span style="color:#f92672">=</span>./
+
+</code></pre></div><pre><code>00000000000041a0 B Test::first[abi:cxx11]
+00000000000041c0 B Test::second[abi:cxx11]
+</code></pre><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">./main 
+first2
+second2
+</code></pre></div><p>Both the non-inlined variable <code>first</code> and the inlined variable <code>second</code> from the <strong>static library</strong> have their raw strings embedded in the binary in <code>.rodata</code> section.</p>
+<pre><code>objdump -sC -j .rodata ./main
+
+./main:     file format elf64-x86-64
+
+Contents of section .rodata:
+ 3000 01000200 00000000 62617369 635f7374  ........basic_st
+ 3010 72696e67 3a3a5f4d 5f636f6e 73747275  ring::_M_constru
+ 3020 6374206e 756c6c20 6e6f7420 76616c69  ct null not vali
+ 3030 64006669 72737400 7365636f 6e6400    d.first.second.
+</code></pre><blockquote>
+<p>The linker searches from left to right, and notes unresolved symbols as it go. If a library resolves the symbol, it takes the object files of that library to resolve the symbol.</p>
+<p><a href="https://stackoverflow.com/a/409470/3951920">stackoverflow</a></p>
+</blockquote>
+<p>The non-inlined variable chooses the first occurrence in the library order, whereas the inlined variable chooses the dynamic linked symbol in both cases. What happens when we remove the dependency on <code>libtest.so</code> from <code>main</code> by touching the <code>DT_NEEDED</code> dynamic section? It falls back to the embedded <code>.rodata</code> definition from the static library.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">patchelf --remove-needed libtest.so ./main
+
+patchelf --print-needed ./main
+libstdc++.so.6
+libm.so.6
+libgcc_s.so.1
+libc.so.6
+
+./main 
+first
+second
+</code></pre></div><p>Let&rsquo;s add it back and we are once again depending on the symbol from the dynamic library.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell">patchelf --add-needed libtest.so ./main
+
+./main 
+first
+second3
+</code></pre></div></div>
+  
+</article></main>
+<footer class="footer">
+  <span>&copy; 2020 <a href="https://nishanthkarthik.github.io">nishanthkarthik&#39;s blog</a></span>
+  <span>&middot;</span>
+  <span>Powered by <a href="https://gohugo.io/" rel="noopener" target="_blank">Hugo️️</a>️</span>
+  <span>&middot;</span>
+  <span>Theme️ <a href="https://github.com/nanxiaobei/hugo-paper" rel="noopener" target="_blank">Paper</a></span>
+</footer>
+<script src="https://nishanthkarthik.github.io/highlight.min.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+</body>
+</html>
+

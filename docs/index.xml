@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>nishanthkarthik&#39;s blog</title>
+    <link>https://nishanthkarthik.github.io/</link>
+    <description>Recent content on nishanthkarthik&#39;s blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 03 Aug 2020 19:26:20 +0200</lastBuildDate><atom:link href="https://nishanthkarthik.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Inline Variables in C&#43;&#43;17</title>
+      <link>https://nishanthkarthik.github.io/blog/cpp-inline-var/</link>
+      <pubDate>Mon, 03 Aug 2020 19:26:20 +0200</pubDate>
+      
+      <guid>https://nishanthkarthik.github.io/blog/cpp-inline-var/</guid>
+      <description>I watched Nir Friedman&amp;rsquo;s cppcon talk on globals and the linker. This post is a hands-on to try inline variables in C++.
+What are inline variables? cppreference on inline specifier says
+ An inline function or variable (since C++17) with external linkage (e.g. not declared static) has the following additional properties:
+ There may be more than one definition of an inline function or variable (since C++17) in the program as long as each definition appears in a different translation unit and (for non-static inline functions and variables (since C++17)) all definitions are identical.</description>
+    </item>
+    
+  </channel>
+</rss>
