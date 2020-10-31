@@ -1,0 +1,4 @@
+baseURL = "https://nishanthkarthik.github.io"
+languageCode = "en-us"
+title = "nishanthkarthik's blog"
+theme = "paper"
